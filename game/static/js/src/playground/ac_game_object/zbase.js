@@ -9,16 +9,14 @@ class AcGameObject {
     }
     // 只会在第一帧执行一次
     start() {
-
     }
     // 每一帧均会执行一次
     update() {
-        
     }
     // 在被销毁前执行一次
     on_destroy() {
-
     }
+
     // 删除该物体
     destroy() {
         this.on_destroy();
@@ -37,10 +35,10 @@ let last_timestamp;
 let AC_GAME_ANIMATION = function(timestamp) {
     for (let i = 0; i < AC_GAME_OBJECTS.length; i ++) {
         let obj = AC_GAME_OBJECTS[i];
-        if (obj.has_called_start) {
+        if (!obj.has_called_start) {
             obj.start();
             obj.has_called_start = true;
-        }else {
+        } else {
             obj.timedelta = timestamp - last_timestamp;
             obj.update();
         }

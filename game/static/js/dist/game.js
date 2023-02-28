@@ -65,16 +65,14 @@ class AcGameObject {
     }
     // 只会在第一帧执行一次
     start() {
-
     }
     // 每一帧均会执行一次
     update() {
-        
     }
     // 在被销毁前执行一次
     on_destroy() {
-
     }
+
     // 删除该物体
     destroy() {
         this.on_destroy();
@@ -93,10 +91,10 @@ let last_timestamp;
 let AC_GAME_ANIMATION = function(timestamp) {
     for (let i = 0; i < AC_GAME_OBJECTS.length; i ++) {
         let obj = AC_GAME_OBJECTS[i];
-        if (obj.has_called_start) {
+        if (!obj.has_called_start) {
             obj.start();
             obj.has_called_start = true;
-        }else {
+        } else {
             obj.timedelta = timestamp - last_timestamp;
             obj.update();
         }
@@ -141,6 +139,7 @@ class Player extends AcGameObject {
         this.y = y;
         this.vx = 0;
         this.vy = 0;
+        this.move_length = 0;
         this.radius = radius;
         this.color = color;
         this.speed = speed;
@@ -166,16 +165,29 @@ class Player extends AcGameObject {
         });
     }
 
+    get_dist(x1, y1, x2, y2){
+        let dx = x1 - x2;
+        let dy = y1 - y2;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
     move_to(tx, ty) {
-        console.log("move to", tx, ty);
+        this.move_length = this.get_dist(this.x, this.y, tx, ty);
+        let angle = Math.atan2(ty - this.y, tx - this.x);
+        this.vx = Math.cos(angle);
+        this.vy = Math.sin(angle);
     }
 
     update() {
-        this.x += this.vx;
-        this.y += this.vy;
-       // if (this.is_me) {
-       //     this.add_listening_events();
-       // }
+        if (this.move_length < this.eps) {
+            this.move_length = 0;
+            this.vx = this.vy = 0;
+        } else {
+            let moved = Math.min(this.move_length, this.speed * this.timedelta / 1000);
+            this.x += this.vx * moved;
+            this.y += this.vy * moved;
+            this.move_length -= moved;
+        }
         this.render();
     }
 
