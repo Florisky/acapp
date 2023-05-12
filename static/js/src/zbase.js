@@ -10,6 +10,7 @@ export class AcGame{
 
         this.start();
     }
+
     start(){
 
     }
