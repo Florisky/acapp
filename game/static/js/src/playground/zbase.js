@@ -36,6 +36,8 @@ class AcGamePlayground {
     }
 
     show(mode) { // 显示playground界面
+        let outer = this;
+
         this.$playground.show();
         this.width = this.$playground.width();
         this.height = this.$playground.height();
@@ -51,7 +53,11 @@ class AcGamePlayground {
                 this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, this.get_random_color(), 0.15, "robot"));
             }
         } else if (mode === "multi mode"){
-            
+            this.mps = new MultiPlayerSocket(this);
+
+            this.mps.ws.onopen = function(){
+                outer.mps.send_create_player();
+            };
         }
 
     }
