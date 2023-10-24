@@ -66,6 +66,18 @@ class AcGameObject {
         AC_GAME_OBJECTS.push(this);
         this.has_called_start = false; // 是否执行过start函数
         this.timedelta = 0 // 当前帧距离上一帧的时间间隔 单位:ms
+        this.uuid = this.create_uuid();
+
+        console.log(this.uuid);
+    }
+
+    create_uuid() {
+        let res = "";
+        for (let i = 0; i < 8; i ++) {
+            let x = parseInt(Math.floor(Math.random() * 10)); //返回[0,1)之间的数
+            res += x;
+        }
+        return res;
     }
     // 只会在第一帧执行一次
     start() {
@@ -218,7 +230,7 @@ class Player extends AcGameObject {
     start() {
         if (this.character === "me") {
             this.add_listening_events();
-        } else {
+        } else if (this.character === "robot") {
             let tx = Math.random() * this.playground.width / this.playground.scale;
             let ty = Math.random() * this.playground.height / this.playground.scale;
             this.move_to(tx, ty);
@@ -438,16 +450,50 @@ class MultiPlayerSocket {
     }
 
     start () {
-        
+        this.receive();
     }
     
-    send_create_player() {
+    receive () {
+        let outer = this;
+
+        this.ws.onmessage = function(e) {
+            let data = JSON.parse(e.data);
+            let uuid = data.uuid;
+            if (uuid === outer.uuid) return false;
+            let event = data.event;
+            if (event === "create_player") {
+                outer.receive_create_player(uuid, data.username, data.profile);
+            }
+        };
+    }
+
+    send_create_player (username, profile) {
+        let outer = this;
+
         this.ws.send(JSON.stringify({
-            'message': "Hello AcApp Server",
+            'event': "create_player",
+            'uuid': outer.uuid,
+            'username': username,
+            'profile': profile,
         }));
     }
 
-    receive_create_player() {}
+    receive_create_player (uuid, username, profile) {
+        let player = new Player(
+            this.playground,
+            this.playground.width / 2 / this.playground.scale,
+            0.5,
+            0.05,
+            "white",
+            0.15,
+            "enemy",
+            username,
+            profile,
+        );
+
+        player.uuid = uuid;
+        this.playground.players.push(player);
+    }
 }
 class AcGamePlayground {
     constructor(root) {
@@ -506,8 +552,10 @@ class AcGamePlayground {
         } else if (mode === "multi mode"){
             this.mps = new MultiPlayerSocket(this);
 
+            this.mps.uuid = this.players[0].uuid
+
             this.mps.ws.onopen = function(){
-                outer.mps.send_create_player();
+                outer.mps.send_create_player(outer.root.settings.username, outer.root.settings.profile);
             };
         }
 
