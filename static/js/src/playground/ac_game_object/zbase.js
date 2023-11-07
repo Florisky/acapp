@@ -8,7 +8,6 @@ class AcGameObject {
         this.timedelta = 0 // 当前帧距离上一帧的时间间隔 单位:ms
         this.uuid = this.create_uuid();
 
-        console.log(this.uuid);
     }
 
     create_uuid() {
