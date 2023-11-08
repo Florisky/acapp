@@ -45,6 +45,10 @@ class AcGamePlayground {
 
         this.mode = mode;
 
+        this.state = "waiting";  // waiting -> fighting -> over
+        this.notice_board = new NoticeBoard(this);
+
+
         this.resize();
 
         this.players = [];
@@ -57,7 +61,7 @@ class AcGamePlayground {
         } else if (mode === "multi mode"){
             this.mps = new MultiPlayerSocket(this);
 
-            this.mps.uuid = this.players[0].uuid
+            this.mps.uuid = this.players[0].uuid;
 
             this.mps.ws.onopen = function(){
                 outer.mps.send_create_player(outer.root.settings.username, outer.root.settings.profile);

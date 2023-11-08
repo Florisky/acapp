@@ -152,6 +152,34 @@ class GameMap extends AcGameObject {
         this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     }
 }
+class NoticeBoard extends AcGameObject {
+    constructor(playground) {
+        super();
+
+        this.playground = playground;
+        this.ctx = this.playground.game_map.ctx;
+        this.text = "已就绪：0人";
+    }
+
+    start() {
+    }
+
+    write(text) {
+        this.text = text;
+    }
+
+    update() {
+        this.render();
+    }
+
+    render() {
+        this.ctx.font = "20px serif";
+        this.ctx.fillStyle = "white";
+        this.ctx.textAlign = "center";
+        this.ctx.fillText(this.text, this.playground.width / 2, 20);
+    }
+}
+
 class Particle extends AcGameObject {
     constructor(playground, x, y, radius, vx, vy, color, speed, move_length) {
         super();
@@ -679,6 +707,8 @@ class AcGamePlayground {
         this.game_map = new GameMap(this);
 
         this.mode = mode;
+
+        this.state = "waiting";    //waiting -> fighting -> over
 
         this.resize();
 

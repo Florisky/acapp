@@ -45,6 +45,8 @@ class AcGamePlayground {
 
         this.mode = mode;
 
+        this.state = "waiting";    //waiting -> fighting -> over
+
         this.resize();
 
         this.players = [];
