@@ -64,7 +64,7 @@ class Player extends AcGameObject {
                     let fireball = outer.shoot_fireball(tx, ty);
 
                     if (outer.playground.mode === "multi mode") {
-                        outer.playground.mps.send_shoot_fireball(tx, ty, fireball.uuid );
+                        outer.playground.mps.send_shoot_fireball(tx, ty, fireball.uuid);
                     }
                 }
 
@@ -138,6 +138,13 @@ class Player extends AcGameObject {
         this.damage_speed = damage * 100;
         this.speed *= 1.25;
 
+    }
+
+    receive_attack (x, y, angle, damage, ball_uuid, attacker) {
+        attacker.destroy_fireball(ball_uuid);
+        this.x = x;
+        this.y = y;
+        this.is_attacked(angle, damage);
     }
 
     update() {
