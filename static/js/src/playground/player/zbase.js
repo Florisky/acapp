@@ -32,6 +32,14 @@ class Player extends AcGameObject {
     }
 
     start() {
+        this.playground.player_count ++;
+        this.playground.notice_board.write("已就绪：" + this.playground.player_count + "人");
+
+        if (this.playground.player_count >= 3) {
+            this.playground.state = "fighting";
+            this.playground.notice_board.write("Fighting!");
+        }
+
         if (this.character === "me") {
             this.add_listening_events();
         } else if (this.character === "robot") {
@@ -47,6 +55,9 @@ class Player extends AcGameObject {
             return false;
         });
         this.playground.game_map.$canvas.mousedown(function(e) {
+            if (outer.playground.state !== "fighting")
+                return false;
+
             const rect = outer.ctx.canvas.getBoundingClientRect();
 
             if (e.which === 3) {
@@ -73,6 +84,9 @@ class Player extends AcGameObject {
         });
 
         $(window).keydown(function(e) {
+            if (outer.playground.state !== "fighting")
+                return false;
+
             if(e.which === 81) { // 用户按下q键
                 outer.cur_skill = "fireball";
                 return false;
