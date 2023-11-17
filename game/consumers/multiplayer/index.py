@@ -15,9 +15,6 @@ class MultiPlayer(AsyncWebsocketConsumer):
         self.room_name = None
 
         start = 0
-        if data['username'] != "walnut":
-            start = 100000
-
         for i in range(start, 100000000):
             name = "room-%d" % (i)
             if not cache.has_key(name) or len(cache.get(name)) < settings.ROOM_CAPACITY:
@@ -37,7 +34,7 @@ class MultiPlayer(AsyncWebsocketConsumer):
                 'uuid': player['uuid'],
                 'username': player['username'],
                 'profile': player['profile'],
-                }))
+            }))
 
         await self.channel_layer.group_add(self.room_name, self.channel_name)
 
@@ -57,8 +54,8 @@ class MultiPlayer(AsyncWebsocketConsumer):
                     'uuid': data['uuid'],
                     'username': data['username'],
                     'profile': data['profile']
-                    }
-                )
+                }
+        )
 
     async def group_send_event(self, data):
         await self.send(text_data=json.dumps(data))
@@ -72,8 +69,8 @@ class MultiPlayer(AsyncWebsocketConsumer):
                     'uuid': data['uuid'],
                     'tx': data['tx'],
                     'ty': data['ty'],
-                    }
-                )
+                }
+        )
 
     async def shoot_fireball(self, data):
         await self.channel_layer.group_send(
@@ -102,7 +99,19 @@ class MultiPlayer(AsyncWebsocketConsumer):
                     'damage': data['damage'],
                     'ball_uuid': data['ball_uuid'],
                 }
-            )
+        )
+
+    async def blink(self, data):
+        await self.channel_layer.group_send(
+                self.room_name,
+                {
+                    'type': "group_send_event",
+                    'event': "blink",
+                    'uuid': data['uuid'],
+                    'tx': data['tx'],
+                    'ty': data['ty'],
+                }
+        )
 
     async def receive(self, text_data):
         data = json.loads(text_data)
@@ -116,3 +125,5 @@ class MultiPlayer(AsyncWebsocketConsumer):
             await self.shoot_fireball(data)
         elif event == "attack":
             await self.attack(data)
+        elif event == "blink":
+            await self.blink(data)
