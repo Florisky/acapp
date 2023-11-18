@@ -14,6 +14,9 @@ from thrift.server import TServer
 from queue import Queue
 from time import sleep
 from threading import Thread
+from acapp.asgi import channel_layer
+from asgiref.sync import async_to_sync
+from django.core.cache import cache
 
 queue = Queue() # 全局消息队列
 
@@ -32,16 +35,38 @@ class Pool:
 
     def add_player(self, player):
         self.players.append(player)
-        print("add player: %s %d" % (player.username, player.score))
 
     def check_match(self, a, b):
+       # if a.username == b.username:
+       #     return False
         dt = abs(a.score - b.score)
         a_max_dif = a.waiting_time * 50
         b_max_dif = b.waiting_time * 50
         return dt <= a_max_dif and dt <= b_max_dif
 
     def match_success(self, ps):
-        print("Match Success: %s %s %s\n" % (ps[0], ps[1], ps[2]))
+        print("Match Success: %s %s %s\n" % (ps[0].username, ps[1].username, ps[2].username))
+        room_name = "room-%s-%s-%s" % (ps[0].uuid, ps[1].uuid, ps[2].uuid)
+        players = []
+        for p in ps:
+            async_to_sync(channel_layer.group_add)(room_name, p.channel_name)
+            players.append({
+                'uuid': p.uuid,
+                'username': p.username,
+                'profile': p.profile,
+                'hp': 100,
+            })
+        for p in ps:
+            async_to_sync(channel_layer.group_send)(
+                room_name,
+                {
+                    'type': "group_send_event",
+                    'event': "create_player",
+                    'uuid': p.uuid,
+                    'username': p.username,
+                    'profile': p.profile,
+                }
+            )
 
     def increase_waiting_time(self):
         for player in self.players:
@@ -65,6 +90,7 @@ class Pool:
 
 class MatchHandler:
     def add_player(self, score, uuid, username, profile, channel_name):
+        print("add player: %s %d" % (username, score))
         player = Player(score, uuid, username, profile, channel_name)
         queue.put(player)
         return 0
