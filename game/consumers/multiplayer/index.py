@@ -38,9 +38,9 @@ class MultiPlayer(AsyncWebsocketConsumer):
         client = Match.Client(protocol)
 
         def db_get_player():
-            return Player.objects.get(user__username=username)
+            return Player.objects.get(user__username=data['username'])
 
-        player = database_sync_to_async(db_get_player)()
+        player = await database_sync_to_async(db_get_player)()
 
         # Connect!
         transport.open()

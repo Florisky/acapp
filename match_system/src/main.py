@@ -56,6 +56,7 @@ class Pool:
                 'profile': p.profile,
                 'hp': 100,
             })
+        cache.set(room_name, players, 3600) # 有效时间：1h
         for p in ps:
             async_to_sync(channel_layer.group_send)(
                 room_name,
