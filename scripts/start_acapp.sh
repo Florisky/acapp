@@ -19,17 +19,21 @@ cd "$(dirname "$0")/.." || exit
 tmux new-session -d -s acapp -n main_window
 tmux split-window -h -t acapp:0
 
+
 # 在下方的 pane 中垂直分割 pane
 tmux split-window -v -t acapp:0
 
 # 为每个 pane 命名并在其中执行相应的命令
-tmux rename-pane -t acapp:0.0 'uwsgi'
+tmux select-pane -t acapp:0.0
+tmux select-pane -T 'uwsgi'
 tmux send-keys -t acapp:0.0 'cd ~/acapp && uwsgi --ini scripts/uwsgi.ini' C-m
 
-tmux rename-pane -t acapp:0.1 'daphne'
+tmux select-pane -t acapp:0.1
+tmux select-pane -T 'daphne'
 tmux send-keys -t acapp:0.1 'cd ~/acapp && daphne -b 0.0.0.0 -p 5015 acapp.asgi:application' C-m
 
-tmux rename-pane -t acapp:0.2 'main.py'
+tmux select-pane -t acapp:0.2
+tmux select-pane -T 'main.py'
 tmux send-keys -t acapp:0.2 'cd ~/acapp/match_system/src && ./main.py' C-m
 
 # 附加到 tmux 会话
